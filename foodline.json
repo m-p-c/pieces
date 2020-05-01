@@ -1,0 +1,571 @@
+{
+  "description": "Feed The People",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "next": "set_globals",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "next": "confirm_appt",
+          "event": "incomingRequest"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -110,
+          "y": -1160
+        }
+      }
+    },
+    {
+      "name": "confirm_appt",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "split_confirmation",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 630,
+          "y": -860
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "your mutual aid delivery is coming up on {{flow.data.date}}. still want it? reply 1 to confirm and 2 to cancel",
+        "timeout": 3600
+      }
+    },
+    {
+      "name": "split_confirmation",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "send_no_match",
+          "event": "noMatch"
+        },
+        {
+          "next": "accept_delivery",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "1",
+              "arguments": [
+                "{{widgets.confirm_appt.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "reject_delivery",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "2",
+              "arguments": [
+                "{{widgets.confirm_appt.inbound.Body}}"
+              ],
+              "type": "equal_to",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.confirm_appt.inbound.Body}}",
+        "offset": {
+          "x": 640,
+          "y": -580
+        }
+      }
+    },
+    {
+      "name": "send_confirmation_sms",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 680,
+          "y": -120
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "awesome, be on the look out :)"
+      }
+    },
+    {
+      "name": "send_cancellation_sms",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1040,
+          "y": -130
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "thanks for letting us know!"
+      }
+    },
+    {
+      "name": "send_no_match",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "confirm_appt",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 320,
+          "y": -360
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "sorry, we couldn't understand your response"
+      }
+    },
+    {
+      "name": "accept_delivery",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_confirmation_sms",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 650,
+          "y": -350
+        },
+        "parameters": [
+          {
+            "value": "{{flow.data.subscriber}}",
+            "key": "subscriber"
+          },
+          {
+            "value": "{{flow.data.delivery}}",
+            "key": "delivery"
+          },
+          {
+            "value": "true",
+            "key": "confirmed"
+          }
+        ],
+        "url": "https://ceil-centipede-4564.twil.io/confirm-delivery"
+      }
+    },
+    {
+      "name": "reject_delivery",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_cancellation_sms",
+          "event": "success"
+        },
+        {
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1020,
+          "y": -370
+        },
+        "parameters": [
+          {
+            "value": "{{flow.data.subscriber}}",
+            "key": "subscriber"
+          },
+          {
+            "value": "{{flow.data.delivery}}",
+            "key": "delivery"
+          }
+        ],
+        "url": "https://ceil-centipede-4564.twil.io/confirm-delivery"
+      }
+    },
+    {
+      "name": "ask_address",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "set_address",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -310,
+          "y": 350
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "ok, {{flow.variables.name}}, where should we deliver your food? please include the address / dropoff point and any delivery instructions.",
+        "timeout": 3600
+      }
+    },
+    {
+      "name": "show_subscription",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -580,
+          "y": 1400
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "okay {{flow.variables.name}}, you're all set! we're dropping off your food at {{flow.variables.address}}.\n\nyou're just really cool."
+      }
+    },
+    {
+      "name": "welcome",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "ask_name",
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -270,
+          "y": -200
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "welcome to {{flow.variables.group_name}}. we're collaborating with {{flow.variables.courier_service}}  to deliver free vegan meals to your door!"
+      }
+    },
+    {
+      "name": "ask_name",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "set_name",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -310,
+          "y": 50
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "body": "what's your name?",
+        "timeout": 3600
+      }
+    },
+    {
+      "name": "update_subscriber",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "show_subscription",
+          "event": "success"
+        },
+        {
+          "next": "something_went_wrong",
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -160,
+          "y": 1030
+        },
+        "parameters": [
+          {
+            "value": "{{flow.variables.name}}",
+            "key": "name"
+          },
+          {
+            "value": "{{trigger.message.From}}",
+            "key": "digits"
+          },
+          {
+            "value": "{{flow.variables.address}}",
+            "key": "address"
+          },
+          {
+            "value": "{{flow.variables.allergies}}",
+            "key": "allergies"
+          }
+        ],
+        "url": "https://ceil-centipede-4564.twil.io/update-subscriber"
+      }
+    },
+    {
+      "name": "something_went_wrong",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 140,
+          "y": 1400
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "sorry, something went wrong!\n\nplease try me again."
+      }
+    },
+    {
+      "name": "set_name",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "ask_address",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "value": "{{widgets.ask_name.inbound.Body}}",
+            "key": "name"
+          }
+        ],
+        "offset": {
+          "x": 20,
+          "y": 30
+        }
+      }
+    },
+    {
+      "name": "set_address",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "ask_allergies",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "index": "0",
+            "value": "{{widgets.ask_address.inbound.Body}}",
+            "key": "address"
+          }
+        ],
+        "offset": {
+          "x": 40,
+          "y": 350
+        }
+      }
+    },
+    {
+      "name": "lookup_subscriber",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "load_row",
+          "event": "success"
+        },
+        {
+          "next": "welcome",
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -410,
+          "y": -570
+        },
+        "parameters": [
+          {
+            "value": "{{trigger.message.From}}",
+            "key": "digits"
+          }
+        ],
+        "url": "https://ceil-centipede-4564.twil.io/find-subscriber"
+      }
+    },
+    {
+      "name": "load_row",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "show_subscription",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "value": "{{widgets.lookup_subscriber.parsed.fields.name}}",
+            "key": "name"
+          },
+          {
+            "value": "{{widgets.lookup_subscriber.parsed.fields.address}}",
+            "key": "address"
+          },
+          {
+            "value": "{{widgets.lookup_subscriber.parsed.fields.allergies}}",
+            "key": "allergies"
+          }
+        ],
+        "offset": {
+          "x": -710,
+          "y": -200
+        }
+      }
+    },
+    {
+      "name": "ask_allergies",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "set_allergies",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -300,
+          "y": 670
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "body": "any food allergies?",
+        "timeout": 3600
+      }
+    },
+    {
+      "name": "set_allergies",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "update_subscriber",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "index": "0",
+            "value": "{{widgets.ask_allergies.inbound.Body}}",
+            "key": "allergies"
+          }
+        ],
+        "offset": {
+          "x": 50,
+          "y": 670
+        }
+      }
+    },
+    {
+      "name": "set_globals",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "lookup_subscriber",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "index": "0",
+            "value": "$mutual_aid_group",
+            "key": "group_name"
+          },
+          {
+            "index": "1",
+            "value": "$courier_service",
+            "key": "courier_service"
+          }
+        ],
+        "offset": {
+          "x": -410,
+          "y": -850
+        }
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}
