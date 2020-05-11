@@ -1,6 +1,8 @@
 # pieces
 
-this repo contains the pieces of an app that connects twilio sms to airtable and back again.
+this repo contains various tools to help mutual aid projects.
+
+currenty, it holds the pieces of an app that connects twilio sms to airtable and back again.
 
 a better readme is forthcoming. the gist for now:
 
