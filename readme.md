@@ -1,8 +1,8 @@
 # pieces
 
 this repo contains various tools to help mutual aid projects.
-
-currenty, it holds the pieces of an app that connects twilio sms to airtable and back again.
+ 
+this tool connects people who have access to sms to people distributing resources. through an automated text flow powered by twillio, recipients can answer basic questions required to customize a delivery or request, this data then auto populates a customizable database/spreadsheet hybrid called airtable. airtable allows you then to pick a row that will run a mass text to announce deliveries to subscribers. human discretion will be necessary to do needs matching but this can help automate most every other part of the information process. each different mutual aid group can utilize this flow and change it to suit their needs, the tools that make this up are fairly easy to use without knowing how to code.
 
 a better readme is forthcoming. the gist for now:
 
