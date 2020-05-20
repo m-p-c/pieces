@@ -12,5 +12,19 @@ a better readme is forthcoming. the gist for now:
 
 3. go to Help > API Documentation to get the id of the airtable base that you just cloned
 4. get your airtable api key from your [airtable account page](https://airtable.com/account).
+5. get the id for the base by going to the cloned table, clicking on "help" and accessing "API documentation"
+    1. The introduction will tell you the id of the base (alpha-numeric code)
 5. [confirm-delivery.js](confirm-delivery.js), [find-subscriber.js](find-subscriber.js), and [update-subscriber](update-subscriber.js) are twilio functions. you'll want to **edit them to include your airtable api keys** and **add them as twilio functions**
-6. [foodline.json](foodline.json) is a twilio studio flow. you'll want to **edit it to point to the functions you just created** and then **upload it to studio**.
+    1. You'll need to edit the apiKey and the base, filling in the values you obtained in the previous step 
+10. In your twilio account, access "functions" (third icon on left-hand side)
+11. In the functions menu, go to "configure" and add a dependency: name = airtable, version = ^0.8.1
+12. in the function menu, go to "manage"
+13. copy+paste each of the .js files above into new functions.  Make sure to remember the names/paths that you set
+14. Access the "studio" (second icon on the left-hand side)
+15. Click the "+" icon to add a new flow
+16. Scroll down to "import from JSON"
+17. Upload the [foodline.json](foodline.json) as your new flow, You should see a full SMS flow appear.
+18. Update the lookup_subscriber block to use the find-subscriber function
+19. Update the update_subscriber block to use the update-subscriber function
+20. Update the accept_delivery and reject_delivery to use the confirm-delivery function
+21. You should now have a minimal working example that should respond to SMS.  You will need to edit the flow and the Twilio variables to be appropriate for your group/workflow.   
