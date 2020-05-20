@@ -6,11 +6,17 @@ this tool connects people who have access to sms to people distributing resource
 
 a better readme is forthcoming. the gist for now:
 
-1. first, clone [the template airtable](https://airtable.com/shrQ11TVOeT0oCXxo)
+1. first, sign up for airtable
 
-![screen shot of airtable clone option](Screen%20Shot%202020-05-13%20at%2010.23.31%20PM.png)
+![2020-05-14 18.20.23.gif](2020-05-14%2018.20.23.gif)
 
-3. go to Help > API Documentation to get the id of the airtable base that you just cloned
-4. get your airtable api key from your [airtable account page](https://airtable.com/account).
-5. [confirm-delivery.js](confirm-delivery.js), [find-subscriber.js](find-subscriber.js), and [update-subscriber](update-subscriber.js) are twilio functions. you'll want to **edit them to include your airtable api keys** and **add them as twilio functions**
-6. [foodline.json](foodline.json) is a twilio studio flow. you'll want to **edit it to point to the functions you just created** and then **upload it to studio**.
+2. clone [the template airtable](https://airtable.com/shrQ11TVOeT0oCXxo), then go to Help > API Documentation to get the id of the airtable base that you just cloned
+
+![click help click api documentation copy id](2020-05-20%2014.05.26.gif)
+
+3. get your airtable api key from your [airtable account page](https://airtable.com/account).
+
+![go to acct page click generate api key](2020-05-20%2014.11.40.gif)
+
+4. [confirm-delivery.js](confirm-delivery.js), [find-subscriber.js](find-subscriber.js), and [update-subscriber](update-subscriber.js) are twilio functions. you'll want to **edit them to include your airtable api keys** and **add them as twilio functions**
+5. [foodline.json](foodline.json) is a twilio studio flow. you'll want to **edit it to point to the functions you just created** and then **upload it to studio**.
